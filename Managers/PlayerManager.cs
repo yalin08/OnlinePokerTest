@@ -43,7 +43,7 @@ namespace Managers
 
 
 
-		public void LogOut(Player player)
+		public async Task LogOut(Player player)
 		{
 
 			var table = TableManager.Instance.Tables.FirstOrDefault(t => t.Players.Contains(player));

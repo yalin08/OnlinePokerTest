@@ -1,4 +1,8 @@
 
+
+using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics;
+
 namespace Server
 {
 	public class Program
@@ -10,17 +14,22 @@ namespace Server
 			var builder = WebApplication.CreateBuilder(args);
 
 			// Add services to the container.
-
 			builder.Services.AddControllers();
-			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
-
 
 			// SignalR servisini ekliyoruz
 			builder.Services.AddSignalR();
 
+			// IdleKickerService'i kaydediyoruz
+			builder.Services.AddSingleton<IdleKickerService>();  // Servis kaydýný yapýyoruz
+			builder.Services.AddHostedService<IdleKickerService>();  // Arka plan servisini çalýþtýrmak için
+
 			var app = builder.Build();
+
+			// Hub'ý baþlatmak için IHubContext<ChatHub> kullanýyoruz
+			HubConnectionManager.Initialize(app.Services.GetRequiredService<IHubContext<ChatHub>>());
+
 			app.UseRouting();
 
 			// Configure the HTTP request pipeline.
@@ -31,18 +40,11 @@ namespace Server
 			}
 
 			app.UseHttpsRedirection();
-
 			app.UseAuthorization();
-
-
 			app.MapControllers();
 
-			// Endpoint'leri tanýmlýyoruz
-			app.UseEndpoints(endpoints =>
-			{
-				endpoints.MapHub<ChatHub>("/chatHub");
-			});
-			
+			// SignalR Hub'ý için endpoint tanýmlýyoruz
+			app.MapHub<ChatHub>("/chatHub");
 
 			app.Run();
 		}

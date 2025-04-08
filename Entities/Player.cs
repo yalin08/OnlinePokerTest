@@ -4,6 +4,7 @@
 	{
 		public string Name { get; }
 		public string ConnectionId { get;  }
+		public DateTime LastInteractionTime { get; set; }=DateTime.Now;
 		public Table Table { get; set; }
 
 
@@ -11,6 +12,12 @@
 		{
 			Name = name;
 			ConnectionId = connectionId;
+		}
+
+		// Son etkileşim zamanını güncelleyen metot
+		public void UpdateInteractionTime()
+		{
+			LastInteractionTime = DateTime.Now;
 		}
 	}
 }

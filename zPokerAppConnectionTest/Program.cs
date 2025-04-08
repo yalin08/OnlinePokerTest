@@ -13,19 +13,26 @@ var connection = new HubConnectionBuilder()
 // Olaylar önce tanımlanmalı
 connection.On<string, string>("ReceiveMessage", (user, message) =>
 {
-	Console.WriteLine($"{user}: {message}");
+	Console.WriteLine(user == null ? $"{message}" : $"{user}:{message}");
 });
 
 connection.On<string, int>("ReceiveConnection", (connId, tableId) =>
 {
 	connectionId = connId;
 	table = tableId;
-	Console.WriteLine($"Sunucudan gelen ConnectionId: {connectionId} \nMasa Id={table}");
+	Console.Clear();
+	Console.WriteLine($"Masaya başarıyla bağlanıldı!\nHoşgeldin {username}\nSunucudan gelen ConnectionId: {connectionId} \nMasa Id={table}\n");
+});
+
+connection.On("Disconnect", () =>
+{
+	// Bağlantıyı istemci tarafında kapatıyoruz
+	Console.WriteLine("Bağlantınız kesildi.");
+	connection.StopAsync();  // SignalR bağlantısını sonlandırmak için
 });
 
 // Bağlantı en son başlatılmalı
 await connection.StartAsync();
-
 
 // Ana döngü
 while (true)
@@ -33,9 +40,17 @@ while (true)
 	string message = Console.ReadLine();
 	if (string.IsNullOrWhiteSpace(message)) continue;
 
+
+
+	int currentLineCursor = Console.CursorTop;
+	Console.SetCursorPosition(0, currentLineCursor - 1);
+	Console.Write(new string(' ', Console.WindowWidth));
+	Console.SetCursorPosition(0, currentLineCursor - 1);
+
+
 	try
 	{
-		await connection.InvokeAsync("SendMessage", table, username, message);
+		await connection.InvokeAsync("SendMessage", message, username);
 	}
 	catch (Exception ex)
 	{

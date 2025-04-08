@@ -17,19 +17,40 @@ namespace Managers
 
 		public Player CreatePlayer(string name, string connectionId)
 		{
-			return new Player(name, connectionId);
+			Player player = new Player(name, connectionId);
+			player.Table = TableManager.Instance.GetAvailableTable();
+
+			for (int i = 0; i < player.Table.Players.Length; i++)
+			{
+				if (player.Table.Players[i] == null)
+				{
+					player.Table.Players[i] = player;
+					break;
+				}
+			}
+
+			return player;
 		}
 
-	
+		public Player GetPlayer(string connectionId)
+		{
+
+			var player = TableManager.Instance.Tables
+		.SelectMany(t => t.Players)                  // Tüm masalardaki oyuncuları  liste haline getirir
+		.FirstOrDefault(p => p != null && p.ConnectionId == connectionId);
+			return player;
+		}
+
+
 
 		public void LogOut(Player player)
 		{
-			
+
 			var table = TableManager.Instance.Tables.FirstOrDefault(t => t.Players.Contains(player));
 
 			if (table != null)
 			{
-				
+
 				for (int i = 0; i < table.Players.Length; i++)
 				{
 					if (table.Players[i] == player)
@@ -39,11 +60,11 @@ namespace Managers
 					}
 				}
 
-				
+
 				if (table.Players.All(p => p == null))
 				{
 
-					TableManager.Instance.CloseTable(table.Id); 
+					TableManager.Instance.CloseTable(table.Id);
 
 				}
 			}

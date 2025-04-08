@@ -55,6 +55,12 @@ namespace Managers
 
 		}
 
+
+		public Table GetTableById(int id)
+		{
+			return Tables.Find(x => x.Id == id);
+		}
+
 		public List<string> GetPlayersInTable(int tableId)
 		{
 			var table = Tables.FirstOrDefault(t => t.Id == tableId);

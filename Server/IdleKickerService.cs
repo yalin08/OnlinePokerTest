@@ -10,7 +10,7 @@ using System.Diagnostics;
 public class IdleKickerService : BackgroundService
 {
 	private readonly IServiceProvider _services;
-	float kickTime=5;
+	float kickTime=90;
 	public IdleKickerService(IServiceProvider services)
 	{
 		_services = services;
@@ -23,7 +23,7 @@ public class IdleKickerService : BackgroundService
 		while (!stoppingToken.IsCancellationRequested)
 		{
 	
-			await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+			await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
 			await IdleKicker();
 		}
 	}

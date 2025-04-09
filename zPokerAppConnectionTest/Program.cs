@@ -28,7 +28,7 @@ connection.On("Disconnect", () =>
 {
 	// Bağlantıyı istemci tarafında kapatıyoruz
 	Console.WriteLine("Bağlantınız kesildi.");
-	connection.StopAsync();  // SignalR bağlantısını sonlandırmak için
+	connection.InvokeAsync("DisconnectPlayer", connectionId);
 });
 
 // Bağlantı en son başlatılmalı

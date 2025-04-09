@@ -39,7 +39,7 @@ namespace Managers
 		public Table GetAvailableTable()
 		{
 
-			var table = Tables.FirstOrDefault(t => t.Players.Count(p => p != null) < 4);
+			var table = Tables.FirstOrDefault(t => t.Players.Where(p => p != null).Count() < 4);
 
 			if (table == null)
 			{

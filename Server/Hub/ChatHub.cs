@@ -13,52 +13,42 @@ public class ChatHub : Hub
 		
 	}
 
-	// Her 5 saniyede bir bu metod çalışacak
-	private async void IdleKicker(object state)
-	{
-		var players = TableManager.Instance.Tables.SelectMany(t => t.Players).Where(x=>x!=null).ToList();
-
-		// Tüm oyuncuları kontrol et
-		foreach (var player in players)
-		{
-			if (player.LastInteractionTime < DateTime.Now.AddSeconds(-5)) // 5 saniyeden fazla idle kalan oyuncu
-			{
-				var table = TableManager.Instance.GetTableById(player.Table.Id);
-				if (table != null)
-				{
-					// Oyuncuyu bağlantıdan çıkar
-					await SendMessageToPlayer("Idle olduğunuz için bağlantınız kesildi.",player.ConnectionId);
-					//await DisconnectPlayer(player);
-					Debug.WriteLine($"{player.Name} adlı oyuncu idle'dan dolayı masadan çıkarıldı.");
-				}
-			}
-		}
-	}
 
 	// Oyuncuyu masadan çıkaran metod
-	private async Task DisconnectPlayer(Player player)
+	private async Task DisconnectPlayer(string connectionId)
 	{
-		PlayerManager.Instance.LogOut(player);
+		Player player = PlayerManager.Instance.GetPlayer(connectionId);
 
 
+	
 		// Oyuncuya bağlı olan tüm istemcilere, oyuncunun ayrıldığını bildir
 		await SendMessage($"{player.Name} masadan ayrıldı!");
-		// Bağlantısını kes
-		await Clients.Client(player.ConnectionId).SendAsync("Disconnect");
+
+
 		// Oyuncunun bağlantısını kes
 		await base.OnDisconnectedAsync(null);
+
+		// Bağlantısını kes
+		Context.Abort();
+
 	}
 
 	// Bu metod, istemciden gelen mesajları alır ve tüm bağlı istemcilere iletir.
 	public async Task SendMessage(string message, string user=null)
 	{
-		Debug.WriteLine("???");
+
 		var Player = PlayerManager.Instance.GetPlayer(Context.ConnectionId);
-		var table = TableManager.Instance.GetTableById(Player.Table.Id);
-		if (Player != null)
+
+		if (Player == null)
+			return;
+		else
+
 		{
 			Player.UpdateInteractionTime(); // Mesaj gönderildiğinde idleTime'ı günceller
 		}
+
+		var table = TableManager.Instance.GetTableById(Player.Table.Id);
+
 
 		Debug.WriteLine($"");
 		if (table == null)
@@ -130,6 +120,10 @@ public class ChatHub : Hub
 		Debug.WriteLine($"{user.Name} adlı oyuncu {user.Table.Id}. masadan ayrıldı.");
 		// Bağlantısı kopan kullanıcıyı bilgilendiriyoruz
 		await SendMessage($"{user.Name} masadan ayrıldı!");
+
+
+		PlayerManager.Instance.LogOut(user);
+
 
 		await base.OnDisconnectedAsync(exception);
 	}

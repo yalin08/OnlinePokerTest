@@ -5,33 +5,11 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Threading.Tasks;
 
-public class ChatHub : Hub
+public class GameHub : Hub
 {
 
-	public ChatHub()
-	{
-		
-	}
+	#region Chat metodları
 
-
-	// Oyuncuyu masadan çıkaran metod
-	private async Task DisconnectPlayer(string connectionId)
-	{
-		Player player = PlayerManager.Instance.GetPlayer(connectionId);
-
-
-	
-		// Oyuncuya bağlı olan tüm istemcilere, oyuncunun ayrıldığını bildir
-		await SendMessage($"{player.Name} masadan ayrıldı!");
-
-
-		// Oyuncunun bağlantısını kes
-		await base.OnDisconnectedAsync(null);
-
-		// Bağlantısını kes
-		Context.Abort();
-
-	}
 
 	// Bu metod, istemciden gelen mesajları alır ve tüm bağlı istemcilere iletir.
 	public async Task SendMessage(string message, string user=null)
@@ -50,7 +28,6 @@ public class ChatHub : Hub
 		var table = TableManager.Instance.GetTableById(Player.Table.Id);
 
 
-		Debug.WriteLine($"");
 		if (table == null)
 		{
 			await Clients.Client(Player.ConnectionId).SendAsync("ReceiveMessage", null, "Masa bulunamadı.");
@@ -68,25 +45,103 @@ public class ChatHub : Hub
 		var Player = PlayerManager.Instance.GetPlayer(Context.ConnectionId);
 		var table = TableManager.Instance.GetTableById(Player.Table.Id);
 
-		Debug.WriteLine($"");
-		if (table == null)
-		{
-			await Clients.Client(connectionId).SendAsync("ReceiveMessage", null, "Masa bulunamadı.");
-			return;
-		}
+
 		if (Player == null)
 		{
 			return;
 		}
 
-			await Clients.Client(connectionId).SendAsync("ReceiveMessage", null, message);
+		if (table == null)
+		{
+			await Clients.Client(connectionId).SendAsync("ReceiveMessage", null, "Masa bulunamadı.");
+			return;
+		}
+
+		await Clients.Client(connectionId).SendAsync("ReceiveMessage", null, message);
 		
 	}
 
+	#endregion
+
+
+
+	public async Task GetPlayerCards()
+	{
+		var player = PlayerManager.Instance.GetPlayer(Context.ConnectionId);
+
+		string text = $"{player.Name} kartları:\n  {string.Join("\n", player.Cards)}";
+
+		Console.Write(text);
+
+		await Clients.Client(player.ConnectionId).SendAsync("ReceiveMessage", null, player.Cards);
+
+
+	}
+
+	public async Task GetTableDeck()
+	{
+		var player = PlayerManager.Instance.GetPlayer(Context.ConnectionId);
+		var table = TableManager.Instance.GetTableById(player.Table.Id);
+
+
+
+
+
+
+		await Clients.Client(player.ConnectionId).SendAsync("ReceiveMessage", null, table.Deck);
+	}
+
+	//denemek için, ileride değişmeli.
+	public async Task DealCards()
+	{
+		var player = PlayerManager.Instance.GetPlayer(Context.ConnectionId);
+		var table = TableManager.Instance.GetTableById(player.Table.Id);
+
+		table.ResetDeck();
+		table.DealCards();
+
+
+		string text = $"{table.Id} Masanın destesi:\n {string.Join("\n", table.Deck)}";
+
+		Console.WriteLine(text);
+		text = $"{player.Name} kartları:\n{string.Join("\n", player.Cards)}";
+
+		Console.WriteLine(text);
+
+	}
+
+
+
+
+
+
+
+
+	#region Bağlantı metodları
+
+	// Oyuncuyu masadan çıkaran metod
+	private async Task DisconnectPlayer(string connectionId)
+	{
+		Player player = PlayerManager.Instance.GetPlayer(connectionId);
+
+
+
+		// Oyuncuya bağlı olan tüm istemcilere, oyuncunun ayrıldığını bildir
+		await SendMessage($"{player.Name} masadan ayrıldı!");
+
+
+		// Oyuncunun bağlantısını kes
+		await base.OnDisconnectedAsync(null);
+
+		// Bağlantısını kes
+		Context.Abort();
+
+	}
 
 	// Bağlantı sağlandığında bu metod çalışacak.
 	public override async Task OnConnectedAsync()
 	{
+	
 		var playerName = Context.GetHttpContext()?.Request.Query["playerName"]; // URL parametrelerinden oyuncu ismini al
 		if (string.IsNullOrWhiteSpace(playerName))
 		{
@@ -96,19 +151,25 @@ public class ChatHub : Hub
 		// Bağlantıya oyuncu ekleyelim
 		var player = PlayerManager.Instance.CreatePlayer(playerName, Context.ConnectionId);
 		var tableId = player.Table.Id;
-		Debug.WriteLine($"{player.Name} adlı oyuncu {tableId}. masaya katıldı.");
+		Console.WriteLine($"{player.Name} adlı oyuncu {tableId}. masaya katıldı.");
 
 		await Clients.Caller.SendAsync("ReceiveConnection", player.ConnectionId, tableId);
 
 
-		List<string> players=TableManager.Instance.GetPlayersInTable(tableId);
-		
+		List<string> players = TableManager.Instance.GetPlayersInTable(tableId);
+
 		// Odaya katıldığını bildir
 		await SendMessage($"{playerName} masaya katıldı!");
 
 		string a = string.Join("\n", players);
 
-		await SendMessageToPlayer($"Masadaki oyuncular:\n{a}",player.ConnectionId);
+		await SendMessageToPlayer($"Masadaki oyuncular:\n{a}", player.ConnectionId);
+
+
+
+		await DealCards();
+
+
 		await base.OnConnectedAsync();
 	}
 
@@ -117,7 +178,7 @@ public class ChatHub : Hub
 	{
 		var user = PlayerManager.Instance.GetPlayer(Context.ConnectionId);
 
-		Debug.WriteLine($"{user.Name} adlı oyuncu {user.Table.Id}. masadan ayrıldı.");
+		Console.WriteLine($"{user.Name} adlı oyuncu {user.Table.Id}. masadan ayrıldı.");
 		// Bağlantısı kopan kullanıcıyı bilgilendiriyoruz
 		await SendMessage($"{user.Name} masadan ayrıldı!");
 
@@ -127,4 +188,6 @@ public class ChatHub : Hub
 
 		await base.OnDisconnectedAsync(exception);
 	}
+
+	#endregion
 }

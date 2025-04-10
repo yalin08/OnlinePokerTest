@@ -28,7 +28,7 @@ namespace Server
 			var app = builder.Build();
 
 			// Hub'ý baþlatmak için IHubContext<ChatHub> kullanýyoruz
-			HubConnectionManager.Initialize(app.Services.GetRequiredService<IHubContext<ChatHub>>());
+			HubConnectionManager.Initialize(app.Services.GetRequiredService<IHubContext<GameHub>>());
 
 			app.UseRouting();
 
@@ -44,7 +44,7 @@ namespace Server
 			app.MapControllers();
 
 			// SignalR Hub'ý için endpoint tanýmlýyoruz
-			app.MapHub<ChatHub>("/chatHub");
+			app.MapHub<GameHub>("/gameHub");
 
 			app.Run();
 		}

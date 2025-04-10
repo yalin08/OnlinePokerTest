@@ -48,7 +48,6 @@ namespace Managers
 
 			var table = TableManager.Instance.Tables.FirstOrDefault(t => t.Players.Contains(player));
 
-			Console.WriteLine($"{table.Id} odasındaki {player.Name} çıkış yapmak üzere");
 
 			if (table != null)
 			{
@@ -57,8 +56,6 @@ namespace Managers
 				{
 					if (table.Players[i] == player)
 					{
-						Console.WriteLine($"{table.Id} odasından {table.Players[i].Name} silindi");
-
 						table.Players[i] = null;
 						break;
 					}

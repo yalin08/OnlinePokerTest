@@ -10,7 +10,7 @@ using System.Diagnostics;
 public class IdleKickerService : BackgroundService
 {
 	private readonly IServiceProvider _services;
-	float kickTime=90;
+	float kickTime=180;
 	public IdleKickerService(IServiceProvider services)
 	{
 		_services = services;
@@ -22,8 +22,8 @@ public class IdleKickerService : BackgroundService
 	{
 		while (!stoppingToken.IsCancellationRequested)
 		{
-	
-			await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
+	//Her 90 saniyede bir kontrol ediyor,eğer oyuncu afk ise oyundan atıyor.
+			await Task.Delay(TimeSpan.FromSeconds(90), stoppingToken);
 			await IdleKicker();
 		}
 	}

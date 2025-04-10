@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 public static class HubConnectionManager
 {
-    private static IHubContext<ChatHub> _hubContext;
+    private static IHubContext<Hub> _hubContext;
 
     // Hub'ı başlatmak için bu fonksiyon kullanılacak
-    public static void Initialize(IHubContext<ChatHub> hubContext)
+    public static void Initialize(IHubContext<Hub> hubContext)
     {
         _hubContext = hubContext;
     }

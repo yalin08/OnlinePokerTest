@@ -61,16 +61,15 @@ namespace Managers
 			return Tables.Find(x => x.Id == id);
 		}
 
-		public List<string> GetPlayersInTable(int tableId)
+		public List<Player> GetPlayersInTable(int tableId)
 		{
 			var table = Tables.FirstOrDefault(t => t.Id == tableId);
 			if (table != null)
 			{
-				return table.Players.Where(p => p != null).Select(p => p.Name).ToList();
+				return table.Players.Where(p => p != null).ToList();
 			}
-			return new List<string>();
+			return new List<Player>();
 		}
-
 
 		public void CloseTable(int id)
 		{
@@ -80,6 +79,13 @@ namespace Managers
 			{
 				Tables.Remove(table);
 			}
+
+		}
+
+		public int GetPlayerCount(int tableId)
+		{
+			int count= Tables[tableId].Players.Where(p => p != null).Count();
+			return count;
 
 		}
 

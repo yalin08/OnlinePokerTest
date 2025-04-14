@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using Entities.Game;
+using Microsoft.AspNetCore.SignalR.Client;
 
 Console.Write("Adınızı girin: ");
 string username = Console.ReadLine();
@@ -17,6 +18,20 @@ connection.On<string, string>("ReceiveMessage", (user, message) =>
 {
 	Console.WriteLine(user == null ? $"{message}" : $"{user}:{message}");
 });
+
+
+connection.On<List<object>>("GetCards", (cards) =>
+{
+	if (cards != null)
+	{
+		Console.WriteLine("Elindeki kartlar:");
+		foreach (Card card in cards)
+		{
+			Console.WriteLine(card.ToString());
+		}
+	}
+});
+
 
 connection.On<string, int>("ReceiveConnection", (connId, tableId) =>
 {

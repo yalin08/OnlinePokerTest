@@ -63,17 +63,16 @@ public class GameHub : Hub
 
 	#endregion
 
-	//kullanıcının elindeki kartları string olarak getiriyor,text amaçlı
+	//kullanıcının elindeki kartları string olarak getiriyor,test amaçlı
 	public async Task ShowPlayersCards()
 	{
 
 		foreach (Player p in TableManager.Instance.GetPlayersInTable(PlayerManager.Instance.GetPlayer(Context.ConnectionId).Table.Id))
 		{
-			var player = PlayerManager.Instance.GetPlayer(p.ConnectionId);
-
-			string text = $"{player.Name} kartları:\n{string.Join("\n", player.Cards)}";
-
+			string text = $"{p.Name} kartları:\n{string.Join("\n", p.Cards)}";
 			Console.WriteLine(text);
+
+			await Clients.Client(p.ConnectionId).SendAsync("GetCards", p.Cards);
 		}
 
 		

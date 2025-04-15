@@ -1,5 +1,6 @@
 ﻿using Entities.Game;
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Text.Json;
 
 Console.Write("Adınızı girin: ");
 string username = Console.ReadLine();
@@ -19,9 +20,9 @@ connection.On<string, string>("ReceiveMessage", (user, message) =>
 	Console.WriteLine(user == null ? $"{message}" : $"{user}:{message}");
 });
 
-
-connection.On<List<object>>("GetCards", (cards) =>
+connection.On<string>("GetCards", (json) =>
 {
+	var cards = JsonSerializer.Deserialize<List<Card>>(json);
 	if (cards != null)
 	{
 		Console.WriteLine("Elindeki kartlar:");
@@ -31,6 +32,7 @@ connection.On<List<object>>("GetCards", (cards) =>
 		}
 	}
 });
+
 
 
 connection.On<string, int>("ReceiveConnection", (connId, tableId) =>

@@ -40,7 +40,7 @@ namespace Entities
 			{
 				for (int j = 1; j < 14; j++)
 				{
-					newDeck.Add(new Card() { number = (Number)j, suit = (Suit)i });
+					newDeck.Add(new Card() { Number = (Number)j, Suit = (Suit)i });
 				}
 			}
 

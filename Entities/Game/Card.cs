@@ -8,12 +8,14 @@ namespace Entities.Game
 {
 	public class Card
 	{
-		public Number number;
-		public Suit suit;
+		public Number Number { get; set; }
+		public Suit Suit { get; set; }
 
-		public override string ToString()
+ 
+
+        public override string ToString()
 		{
-			return $"{number} of {suit}";
+			return $"{Number} of {Suit}";
 		}
 	}
 }

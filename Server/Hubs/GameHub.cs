@@ -3,6 +3,7 @@ using Managers;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using System.Numerics;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 public class GameHub : Hub
@@ -72,7 +73,9 @@ public class GameHub : Hub
 			string text = $"{p.Name} kartları:\n{string.Join("\n", p.Cards)}";
 			Console.WriteLine(text);
 
-			await Clients.Client(p.ConnectionId).SendAsync("GetCards", p.Cards);
+			string json = JsonSerializer.Serialize(p.Cards);
+			Console.WriteLine(json);
+			await Clients.Client(p.ConnectionId).SendAsync("GetCards", json);
 		}
 
 		

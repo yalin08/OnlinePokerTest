@@ -95,8 +95,7 @@ public class GameHub : Hub
 		var player = PlayerManager.Instance.GetPlayer(Context.ConnectionId);
 		var table = TableManager.Instance.GetTableById(player.Table.Id);
 
-		GameManager.Instance.ResetDeck(table);
-		GameManager.Instance.DealCards(table);
+		GameManager.Instance.StartGame(table);
 
 		string text = $"{table.Id} Masanın destesi:\n{string.Join("\n", table.Deck)}";
 		await ShowPlayersCards();

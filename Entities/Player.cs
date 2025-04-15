@@ -8,10 +8,14 @@ namespace Entities
 
 
 
-		public List<Card> Cards = new List<Card>(); // Oyuncunun elindeki kartlar
 
+		private List<Card> _cards;
 
-
+		public List<Card> Cards
+		{
+			get { return _cards; }
+			set { _cards = value; }
+		}
 
 
 		public string ConnectionId { get;  }

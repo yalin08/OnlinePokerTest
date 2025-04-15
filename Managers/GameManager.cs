@@ -21,26 +21,25 @@ namespace Managers
 		}
 		private static GameManager _instance;
 
+		public void StartGame(Table table)
+		{
+			ResetDeck(table);
+			DealCards(table);
+			//	InitializeBetting(table);
+			//StartBettingRound(table);
+		}
 
 
-		public void ResetDeck(Table table)
+		void ResetDeck(Table table)
 		{
 			table.ResetDeck();
 		}
-		public void DealCards(Table table)
+		void DealCards(Table table)
 		{
 			table.DealCards();
 		}
 
-		public List<Card> GetPlayerCards(Player player)
-		{
-			return player.Cards;
-		}
 
-		public List<Card> GetDeck(Table table)
-		{
-			return table.Deck;
-		}
 
 
 

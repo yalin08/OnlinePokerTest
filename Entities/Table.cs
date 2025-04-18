@@ -13,7 +13,29 @@ namespace Entities
 		public int Id { get; set; }
 		public Player[] Players { get; set; } = new Player[4];
 
+
+		//Fold etmemiş veya oyundan çıkmamış oyuncular
+		public List<Player> PlayersInGame { get; set; }=new List<Player>();
+		//şu andaki oyuncuların vermesi gereken en düşük bahis
+		public float CurrentBet { get; set; }
+
+		public Pot MainPot { get; set; }
+		public List<Pot> SidePots { get; set; }= new List<Pot>();
+
+
+		//Şu anda sırası olan oyuncu
+		public Player currentPlayer { get; set; }
+
+
+
+
+
+
 		public List<Card> Deck;
+
+
+
+
 
         public Table()
         {

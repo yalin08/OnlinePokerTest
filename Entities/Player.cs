@@ -17,6 +17,10 @@ namespace Entities
 			set { _cards = value; }
 		}
 
+		public float Balance { get; set; }
+		public bool isAllIn {  get; set; }
+
+
 
 		public string ConnectionId { get;  }
 		public DateTime LastInteractionTime { get; set; }=DateTime.Now;

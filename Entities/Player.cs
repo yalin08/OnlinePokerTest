@@ -9,7 +9,7 @@ namespace Entities
 
 
 
-		private List<Card> _cards;
+		private List<Card> _cards=new List<Card>();
 
 		public List<Card> Cards
 		{

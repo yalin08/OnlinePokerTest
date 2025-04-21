@@ -78,7 +78,7 @@ public class GameHub : Hub
 			await Clients.Client(p.ConnectionId).SendAsync("GetCards", json);
 		}
 
-		
+
 	}
 
 	public async Task GetTableDeck()
@@ -118,6 +118,7 @@ public class GameHub : Hub
 		// Bağlantıya oyuncu ekleyelim
 		var player = PlayerManager.Instance.CreatePlayer(playerName, Context.ConnectionId);
 		var tableId = player.Table.Id;
+		var table = player.Table;
 		Console.WriteLine($"{player.Name} adlı oyuncu {tableId}. masaya katıldı.");
 
 		await Clients.Caller.SendAsync("ReceiveConnection", player.ConnectionId, tableId);
@@ -128,7 +129,7 @@ public class GameHub : Hub
 		// Odaya katıldığını bildir
 		await SendMessage($"{playerName} masaya katıldı!");
 
-		string a = string.Join("\n", players.Select(x=>x.Name));
+		string a = string.Join("\n", players.Select(x => x.Name));
 
 		await SendMessageToPlayer($"Masadaki oyuncular:\n{a}", player.ConnectionId);
 
@@ -136,7 +137,11 @@ public class GameHub : Hub
 
 		if (TableManager.Instance.GetPlayerCount(tableId) != 1)
 		{
-			await DealCards();
+			if (!table.isGameStarted)
+			{
+				table.isGameStarted = true;
+				await DealCards();
+			}
 		}
 
 
@@ -146,12 +151,21 @@ public class GameHub : Hub
 	private async Task DisconnectPlayer(string connectionId)
 	{
 		Player player = PlayerManager.Instance.GetPlayer(connectionId);
-
+		Table table = player.Table;
 		// Oyuncuya bağlı olan tüm istemcilere, oyuncunun ayrıldığını bildir
 		await SendMessage($"{player.Name} masadan ayrıldı!");
 
 		// Oyuncunun bağlantısını kes
 		await base.OnDisconnectedAsync(null);
+
+
+		if (TableManager.Instance.GetPlayerCount(table.Id)<=1)
+		{
+			if (table.isGameStarted)
+			{
+				table.isGameStarted = false;
+			}
+		}
 
 		// Bağlantısını kes
 		Context.Abort();

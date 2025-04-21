@@ -23,6 +23,9 @@ namespace Entities
 		public List<Pot> SidePots { get; set; }= new List<Pot>();
 
 
+		//oyun başladı mı?
+		public bool isGameStarted { get; set; }
+
 		//Şu anda sırası olan oyuncu
 		public Player currentPlayer { get; set; }
 

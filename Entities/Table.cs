@@ -31,19 +31,68 @@ namespace Entities
 
 
 
-
-
-
 		public List<Card> Deck;
+		public List<Card> CommunityCards {  get; set; }=new List<Card>();
 
-
-
-
-
-        public Table()
-        {
+		public Table()
+		{
 			ResetDeck();
-        }
+		}
+
+
+		#region oyun mekanikleriyle ilgili metodlar
+
+		public Player NextPlayer() // sıradaki oyuncuyu bulacak
+		{
+			if (PlayersInGame == null || PlayersInGame.Count == 0)
+				return null;
+
+
+			int currentIndex = PlayersInGame.IndexOf(currentPlayer);
+			int total = Players.Length;
+
+			if (currentIndex == -1)
+				return PlayersInGame[0]; // currentPlayer oyunda değilse, ilk oyuncudan başla
+
+			int nextIndex = (currentIndex + 1) % PlayersInGame.Count;
+			return PlayersInGame[nextIndex];
+		}
+
+		public void AdvanceTurn()
+		{
+			// işte asıl mesela burayı yazmak
+		}
+
+		#endregion
+
+
+
+
+
+
+
+
+		#region Masa içerisinde kartlarla ilgili olan metodlar.
+
+		public void DealCommunityCard()
+		{
+			// Community cardları dağıtma işlemi burada yapılır (Flop, Turn, River)
+			if (CommunityCards.Count == 0) // Flop
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					CommunityCards.Add(DrawCard());
+				}
+			}
+			else if (CommunityCards.Count == 3) // Turn
+			{
+				CommunityCards.Add(DrawCard());
+			}
+			else if (CommunityCards.Count == 4) // River
+			{
+				CommunityCards.Add(DrawCard());
+			}
+		}
 
 		//kartları karıştırmak için
 		public void ShuffleDeck()
@@ -73,8 +122,8 @@ namespace Entities
 
 			foreach (Player p in Players)
 			{
-				if(p!=null)
-				p.Cards.Clear();
+				if (p != null)
+					p.Cards.Clear();
 			}
 
 			ShuffleDeck();
@@ -93,16 +142,22 @@ namespace Entities
 
 				for (int i = 0; i < 2; i++)
 				{
-					var card = Deck[0];
-					player.Cards.Add(card);
-					Deck.Remove(card);
+					player.Cards.Add(DrawCard());
 				}
 
 			}
 		}
+		#endregion
+
+		public Card DrawCard(bool Remove=true)
+		{
+			var card = Deck[0];
+			if(Remove) Deck.Remove(card);
+			return card;
+		}
 
 
-
+		#region Kullanıcı kayıt-çıkarma işlemleri
 		public void AddPlayer(Player player)
 		{
 			for (int i = 0; i < Players.Length; i++)
@@ -122,8 +177,14 @@ namespace Entities
 
 			if (index >= 0)
 			{
+				if (currentPlayer == player)
+					currentPlayer = NextPlayer();
+				PlayersInGame.Remove(player);
+
 				Players[index] = null; // Oyuncuyu null ile işaretle
 			}
 		}
+		#endregion
+
 	}
 }

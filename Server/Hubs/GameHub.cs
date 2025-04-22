@@ -173,6 +173,7 @@ public class GameHub : Hub
 
 
 
+
 	// Bağlantı kopma işleminde bu metod devreye girecek.
 	public override async Task OnDisconnectedAsync(System.Exception exception)
 	{

@@ -1,4 +1,5 @@
 ﻿using Entities.Game;
+using System.Numerics;
 
 namespace Entities
 {
@@ -9,7 +10,7 @@ namespace Entities
 
 
 
-		private List<Card> _cards=new List<Card>();
+		private List<Card> _cards = new List<Card>();
 
 		public List<Card> Cards
 		{
@@ -18,22 +19,23 @@ namespace Entities
 		}
 
 		public float Balance { get; set; }
-		public bool IsFolded {  get; set; }
-		public bool IsAllIn {  get; set; }
+		public float CurrentBet { get; set; }
+		public bool IsFolded { get; set; }
+		public bool IsAllIn { get; set; }
 
 
 
-		public string ConnectionId { get;  }
-		public DateTime LastInteractionTime { get; set; }=DateTime.Now;
+		public string ConnectionId { get; }
+		public DateTime LastInteractionTime { get; set; } = DateTime.Now;
 		public Table Table { get; set; }
 
-		public bool isYourTurn 
-		{ 
-			get 
+		public bool isYourTurn
+		{
+			get
 			{
-				bool turn =Table.currentPlayer == this;
-				return turn; 
-			} 
+				bool turn = Table.currentPlayer == this;
+				return turn;
+			}
 		}
 
 		public Player(string name, string connectionId)
@@ -78,8 +80,9 @@ namespace Entities
 			if (amount <= 0 || amount > Balance)
 				return; // Geçersiz bahis
 
-			Balance -= amount;
-			Table.MainPot.Amount += amount; // Potu artır
+			AddToPot(amount);
+
+
 
 			UpdateInteractionTime();
 
@@ -87,6 +90,50 @@ namespace Entities
 			Table.AdvanceTurn();
 		}
 
+		void AddToPot(float betAmount)
+		{
+	
+
+			// Bahsi yap
+			Balance -= betAmount;
+
+			// Ana potu güncelle
+			if (betAmount >= Table.CurrentBet)
+			{
+				// Ana potu güncelle
+				Table.MainPot.Amount += Table.CurrentBet;
+				betAmount -= Table.CurrentBet;
+			}
+
+			// Eğer ekstra bir bahis kaldıysa, side potlara ekle
+			if (betAmount > 0)
+			{
+				// Yeni oyuncu bahsi için uygun side potu bul
+				var existingSidePot = Table.SidePots
+					.FirstOrDefault(pot => pot.Players.All(p => p.Balance >= pot.Amount));
+
+				if (existingSidePot != null)
+				{
+					// Bulunan side potu mevcut oyuncuya ekle
+					existingSidePot.Players.Add(this);
+					existingSidePot.Amount += betAmount;
+				}
+				else
+				{
+					// Yeni bir side pot oluştur ve ona ekle
+					var newSidePot = new Pot
+					{
+						Players = new List<Player> { this },
+						Amount = betAmount
+					};
+					Table.SidePots.Add(newSidePot);
+				}
+			}
+
+			// Yeni bahsi güncelle
+			Table.CurrentBet = Math.Max(Table.CurrentBet, betAmount);
+
+		}
 
 
 

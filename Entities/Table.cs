@@ -15,12 +15,12 @@ namespace Entities
 
 
 		//Fold etmemiş veya oyundan çıkmamış oyuncular
-		public List<Player> PlayersInGame { get; set; }=new List<Player>();
+		public List<Player> PlayersInGame { get; set; } = new List<Player>();
 		//şu andaki oyuncuların vermesi gereken en düşük bahis
 		public float CurrentBet { get; set; }
 
 		public Pot MainPot { get; set; }
-		public List<Pot> SidePots { get; set; }= new List<Pot>();
+		public List<Pot> SidePots { get; set; } = new List<Pot>();
 
 
 		//oyun başladı mı?
@@ -29,26 +29,32 @@ namespace Entities
 		//Şu anda sırası olan oyuncu
 		public Player currentPlayer { get; set; }
 
+		public Player SmallBlind { get; set; }
+		public Player BigBlind { get; set; }
 
 
 		public List<Card> Deck;
-		public List<Card> CommunityCards {  get; set; }=new List<Card>();
+		public List<Card> CommunityCards { get; set; } = new List<Card>();
 
 		public Table()
 		{
+
 			ResetDeck();
 		}
 
 
 		#region oyun mekanikleriyle ilgili metodlar
 
-		public Player NextPlayer() // sıradaki oyuncuyu bulacak
+		public Player NextPlayer(Player player = null) // sıradaki oyuncuyu bulacak
 		{
 			if (PlayersInGame == null || PlayersInGame.Count == 0)
 				return null;
 
+			if (player == null)
+				player = currentPlayer;
 
-			int currentIndex = PlayersInGame.IndexOf(currentPlayer);
+
+			int currentIndex = PlayersInGame.IndexOf(player);
 			int total = Players.Length;
 
 			if (currentIndex == -1)
@@ -58,9 +64,91 @@ namespace Entities
 			return PlayersInGame[nextIndex];
 		}
 
+		int bettingRound = 0;
 		public void AdvanceTurn()
 		{
-			// işte asıl mesela burayı yazmak
+
+			currentPlayer = NextPlayer();
+			// Tek kişi kaldıysa oyun biter
+			if (PlayersInGame.Count == 1)
+			{
+				PlayerWins(PlayersInGame[0]);
+				StartNewGame();
+				return;
+			}
+
+
+
+			bool allBetsEqual = PlayersInGame
+				.Where(p => !p.IsFolded && !p.IsAllIn)
+				.All(p => p.CurrentBet == CurrentBet);
+
+			if (allBetsEqual)
+			{
+				if (bettingRound == 4)
+					DetermineWinner();
+				else
+					NextTurn();
+
+				bettingRound++;
+
+			}
+
+		}
+
+		private void NextTurn()
+		{
+			currentPlayer = SmallBlind;
+
+		}
+
+		private void DetermineWinner()
+		{
+			DistributePots();
+			StartNewGame();
+		}
+
+		public void DistributePots()
+		{
+			// Ana pot kazananı
+			var winner = HandEvaluator.DetermineWinningPlayer(PlayersInGame);
+			winner.Balance += MainPot.Amount;
+			MainPot.Amount = 0;
+
+			// Side potları kazananlara dağıt
+			foreach (var sidePot in SidePots)
+			{
+				var sidePotWinner = HandEvaluator.DetermineWinningPlayer(sidePot.Players);
+				sidePotWinner.Balance += sidePot.Amount;
+
+			}
+
+			SidePots.Clear();
+		}
+
+
+
+
+		private void StartNewGame()
+		{
+			ResetDeck();
+			DealCards();
+
+			if (SmallBlind == null)
+			{
+				SmallBlind = Players.FirstOrDefault(x => x != null);
+			}
+			BigBlind = NextPlayer(SmallBlind);
+
+			currentPlayer = NextPlayer(BigBlind);
+
+
+
+		}
+
+		private void PlayerWins(Player player)
+		{
+			throw new NotImplementedException();
 		}
 
 		#endregion
@@ -95,7 +183,7 @@ namespace Entities
 		}
 
 		//kartları karıştırmak için
-		public void ShuffleDeck()
+		private void ShuffleDeck()
 		{
 			Random rng = new Random();
 			int n = Deck.Count;
@@ -149,10 +237,10 @@ namespace Entities
 		}
 		#endregion
 
-		public Card DrawCard(bool Remove=true)
+		public Card DrawCard(bool Remove = true)
 		{
 			var card = Deck[0];
-			if(Remove) Deck.Remove(card);
+			if (Remove) Deck.Remove(card);
 			return card;
 		}
 

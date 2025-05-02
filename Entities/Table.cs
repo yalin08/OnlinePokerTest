@@ -72,7 +72,7 @@ namespace Entities
 			// Tek kişi kaldıysa oyun biter
 			if (PlayersInGame.Count == 1)
 			{
-				PlayerWins(PlayersInGame[0]);
+				DetermineWinner();
 				StartNewGame();
 				return;
 			}
@@ -146,10 +146,7 @@ namespace Entities
 
 		}
 
-		private void PlayerWins(Player player)
-		{
-			throw new NotImplementedException();
-		}
+		
 
 		#endregion
 

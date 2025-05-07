@@ -19,7 +19,8 @@ namespace Entities
 		//şu andaki oyuncuların vermesi gereken en düşük bahis
 		public float CurrentBet { get; set; }
 
-		public Pot MainPot { get; set; }
+		public Pot MainPot { get; set; } = new Pot(); 
+
 		public List<Pot> SidePots { get; set; } = new List<Pot>();
 
 
@@ -35,6 +36,15 @@ namespace Entities
 
 		public List<Card> Deck;
 		public List<Card> CommunityCards { get; set; } = new List<Card>();
+
+		public Player firstToAct
+		{
+			get
+			{
+				return (bettingRound == 0) ? NextPlayer(BigBlind) : NextPlayer(SmallBlind);
+			}
+
+		}
 
 		public Table()
 		{
@@ -68,29 +78,28 @@ namespace Entities
 		public void AdvanceTurn()
 		{
 
-			currentPlayer = NextPlayer();
+
 			// Tek kişi kaldıysa oyun biter
 			if (PlayersInGame.Count == 1)
 			{
 				DetermineWinner();
-				StartNewGame();
 				return;
 			}
 
-
+			currentPlayer = NextPlayer();
 
 			bool allBetsEqual = PlayersInGame
 				.Where(p => !p.IsFolded && !p.IsAllIn)
 				.All(p => p.CurrentBet == CurrentBet);
 
-			if (allBetsEqual)
+			if (allBetsEqual && currentPlayer == BigBlind)
 			{
-				if (bettingRound == 4)
+				if (bettingRound == 3)
 					DetermineWinner();
 				else
 					NextTurn();
 
-				bettingRound++;
+
 
 			}
 
@@ -98,7 +107,10 @@ namespace Entities
 
 		private void NextTurn()
 		{
-			currentPlayer = SmallBlind;
+		
+				DealCommunityCard();
+			currentPlayer = firstToAct;
+			bettingRound++;
 
 		}
 
@@ -131,22 +143,42 @@ namespace Entities
 
 		private void StartNewGame()
 		{
+			CurrentBet = 0;
+			bettingRound = 0;
+
+
 			ResetDeck();
 			DealCards();
+
+
+			PlayersInGame.Clear();
+			PlayersInGame = Players.Where(p => p != null).ToList();
+
+
+			foreach (var player in Players)
+			{
+				if (player != null)
+					player.CurrentBet = 0;
+			}
 
 			if (SmallBlind == null)
 			{
 				SmallBlind = Players.FirstOrDefault(x => x != null);
 			}
+			else
+			{
+				SmallBlind = NextPlayer(SmallBlind);
+			}
 			BigBlind = NextPlayer(SmallBlind);
 
-			currentPlayer = NextPlayer(BigBlind);
+
+			currentPlayer = firstToAct;
 
 
 
 		}
 
-		
+
 
 		#endregion
 
@@ -210,6 +242,7 @@ namespace Entities
 				if (p != null)
 					p.Cards.Clear();
 			}
+			CommunityCards.Clear();
 
 			ShuffleDeck();
 
@@ -221,7 +254,7 @@ namespace Entities
 			foreach (Player player in Players)
 			{
 				if (player == null)
-					return;
+					continue;
 
 				player.Cards.Clear();
 
